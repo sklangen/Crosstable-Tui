@@ -68,7 +68,7 @@ void drawRow(size_t index) {
 		wchar_t c = index == i ? 'X' : resultAsWChar[r];
 		wprintw(tableWindow, "%lc | ", c);
 	}
-	wprintw(tableWindow, " %1.1f  |  %2d\n", players[index].score(), index+1); // TODO: Find actual rank
+	wprintw(tableWindow, " %1.1f  |  %2d\n", players[index].score(), index+1);
 }
 
 void drawSeperator(wchar_t c) {

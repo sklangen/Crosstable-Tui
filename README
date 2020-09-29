@@ -1,0 +1,10 @@
+Crosstable TUI
+==============
+
+Simple ncurses program for managing round robin tournaments.
+
+TODO
+====
+
+- Find actual rank of players in table based on scores
+- Make important values (name, score) bold
