@@ -15,7 +15,7 @@ struct Cell {
 	std::wstring content = L"";
 
 	void draw(WINDOW* win, size_t width) {
-		attron(attr);
+		wattron(win, attr);
 		if (content.length() > width) {
 			wprintw(win, "%*.*ls%lc", width-1, width-1, content.c_str(), L'…');
 		} else {
@@ -29,7 +29,7 @@ struct Cell {
 				wprintw(win, "%*s%ls%*s", leftpad, "", content.c_str(), rightpad, "");
 			}
 		}
-		attroff(attr);
+		wattroff(win, attr);
 	}
 };
 
