@@ -1,9 +1,9 @@
 #include <ncurses.h>
 #include <vector>
 #include <string>
+#include "Table.hpp"
 
 #define MAX_PLAYERS 30
-#define MAX_NAME_WIDTH 32
 #define INDEX_ALPHABET L"ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß"
 
 #define RESULT_NONE 0
@@ -11,7 +11,7 @@
 #define RESULT_REMIS 2
 #define RESULT_LOSS 3
 
-const float resultAsScore[] = { 0.0f, 1.0f, 0.5f, 0.0f };
+const float resultAsFloat[] = { 0.0f, 1.0f, 0.5f, 0.0f };
 const wchar_t* resultAsWChar = L" 1½0";
 
 struct Player {
@@ -21,15 +21,23 @@ struct Player {
 	float score() {
 		float score = 0;
 		for (int& r : results) {
-			score += resultAsScore[r];
+			score += resultAsFloat[r];
 		}
 		return score;
 	}
 };
 
-
-WINDOW* tableWindow = NULL;
-std::vector<Player> players;
+std::vector<Player> players = {
+	{ L"Carlsen, Magnus" },
+	{ L"Caruana, Fabiano" },
+	{ L"Ding, Liren" },
+	{ L"Nepomniachtchi, Ian" },
+	{ L"Vachier-Lagrave, Maxime" },
+	{ L"Grischuk, Alexander" },
+	{ L"Aronian, Levon" },
+	{ L"So, Wesley" },
+	{ L"Radjabov, Teimour" },
+};
 
 void fillScores() {
 	for (Player& p : players) {
@@ -39,108 +47,8 @@ void fillScores() {
 	}
 }
 
-void addPlayer(std::wstring name) {
-	players.push_back({ name });
-	fillScores();
-}
-
-int tableWidth() {
-	int resultWidth = (3 + 1) * players.size();
-	return 3 + 1 + 34 + 1 + resultWidth + 7 + 1 + 5;
-}
-
-int tableHeight() {
-	return 1 + 1 + (1 + 1) * players.size();
-}
-
-void drawHeader() {
-	waddstr(tableWindow, " # |               Name               | ");
-	for (size_t i = 0; i < players.size(); ++i) {
-		wprintw(tableWindow, "%lc | ", INDEX_ALPHABET[i]);
-	}
-	waddstr(tableWindow, "Score | Rank\n");
-}
-
-void drawRow(size_t index) {
-	wprintw(tableWindow, " %lc | %-32ls | ", INDEX_ALPHABET[index], players[index].name.c_str());
-	for (size_t i = 0; i < players.size(); ++i) {
-		int r = players[index].results[i];
-		wchar_t c = index == i ? 'X' : resultAsWChar[r];
-		wprintw(tableWindow, "%lc | ", c);
-	}
-	wprintw(tableWindow, " %1.1f  |  %2d\n", players[index].score(), index+1);
-}
-
-void drawSeperator(wchar_t c) {
-	for (int i = 0; i < tableWidth(); ++i) {
-		waddch(tableWindow, c);
-	}
-	waddch(tableWindow, '\n');
-}
-
-void createCenteredTableWindow() {
-	int width, height;
-	getmaxyx(stdscr, height, width);
-
-	int x = (width - tableWidth()) / 2;
-	int y = (height - tableHeight()) / 2;
-
-	tableWindow = newwin(height - y, width - x, y, x);
-}
-
-void deleteTableWindowIfExists() {
-	if (tableWindow != NULL) {
-		delwin(tableWindow);
-	}
-}
-
-void drawTable() {
-	deleteTableWindowIfExists();
-	createCenteredTableWindow();
-
-	drawSeperator('=');
-	drawHeader();
-	drawSeperator('=');
-	for (size_t i = 0; i < players.size(); ++i) {
-		drawRow(i);
-		drawSeperator('-');
-	}
-	wrefresh(tableWindow);
-}
 
 int main(int argc, char **argv) {
-	addPlayer(L"Carlsen, Magnus");
-	addPlayer(L"Caruana, Fabiano");
-	addPlayer(L"Ding, Liren");
-	addPlayer(L"Nepomniachtchi, Ian");
-	addPlayer(L"Vachier-Lagrave, Maxime");
-	addPlayer(L"Grischuk, Alexander");
-	addPlayer(L"Aronian, Levon");
-	addPlayer(L"So, Wesley");
-	addPlayer(L"Radjabov, Teimour");
-	addPlayer(L"Giri, Anish");
-	addPlayer(L"Mamedyarov, Shakhriyar");
-	addPlayer(L"Wang, Hao");
-	addPlayer(L"Rapport, Richard");
-	addPlayer(L"Dominguez Perez, Leinier");
-	addPlayer(L"Anand, Viswanathan");
-	addPlayer(L"Duda, Jan-Krzysztof");
-	addPlayer(L"Karjakin, Sergey");
-	addPlayer(L"Nakamura, Hikaru");
-	addPlayer(L"Topalov, Veselin");
-	addPlayer(L"Harikrishna, Pentala");
-	addPlayer(L"Wei, Yi");
-	addPlayer(L"Firouzja, Alireza");
-	addPlayer(L"Andreikin, Dmitry");
-	addPlayer(L"Vidit, Santosh Gujrathi");
-	addPlayer(L"Svidler, Peter");
-	addPlayer(L"Vitiugov, Nikita");
-	addPlayer(L"Wojtaszek, Radoslaw");
-	addPlayer(L"Artemiev, Vladislav");
-	addPlayer(L"Vallejo Pons, Francisco");
-	addPlayer(L"Le, Quang Liem");
-
-
 	setlocale(LC_ALL, "");
 	initscr();
 	noecho();
@@ -148,10 +56,60 @@ int main(int argc, char **argv) {
 	cbreak();
 	curs_set(0);
 
+	Table t(players.size()+4, players.size()+1);
+	t.widths[0] = 3;
+	t.getCell(0, 0).content = L"#";
+
+	t.widths[1] = 32;
+	t.getCell(1, 0).content = L"Name";
+
+	for (size_t i = 0; i < players.size(); ++i) {
+		int col = i+2;
+		t.widths[col] = 3;
+		t.getCell(col, 0).content = INDEX_ALPHABET[i];
+	}
+	t.widths[players.size()+2] = 7;
+	t.getCell(players.size()+2, 0).content = L"Score";
+
+	t.widths[players.size()+3] = 7;
+	t.getCell(players.size()+3, 0).content = L"Place";
+
+	fillScores();
+	for (size_t i = 0; i < players.size(); ++i) {
+		int row = i + 1;
+		Player& player = players[i];
+
+		t.getCell(0, row).content = INDEX_ALPHABET[i];
+
+		Cell &name = t.getCell(1, row);
+		name.content = player.name;
+		name.align = Cell::LEFT;
+		name.attr = A_BOLD;
+
+		for (size_t j = 0; j < players.size(); ++j) {
+			Cell& result = t.getCell(j+2 ,row);
+
+			if(i == j) {
+				result.content = L"X";
+			} else {
+				result.content = resultAsWChar[player.results[j]];
+				result.attr = A_BOLD;
+			}
+		}
+
+		Cell &score = t.getCell(players.size()+2, row);
+		score.content = std::to_wstring(player.score()).substr(0, 3);
+		score.attr = A_BOLD;
+
+		Cell &place = t.getCell(players.size()+3, row);
+		place.content = std::to_wstring(i+1) + L" ";
+		place.align = Cell::RIGHT;
+		place.attr = A_BOLD;
+	}
+
 	do {
 		clear();
-		refresh();
-		drawTable();
+		t.draw(stdscr);
 	} while (getch() != 'q');
 
 	endwin();
