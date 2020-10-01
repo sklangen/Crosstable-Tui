@@ -1,11 +1,4 @@
-#include <ncurses.h>
-#include <vector>
-#include "Table.hpp"
-#include "Player.hpp"
-
-#define MAX_PLAYERS 30
-#define INDEX_ALPHABET L"ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß"
-
+#include "Crosstable.hpp"
 
 Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
@@ -26,6 +19,30 @@ std::vector<Player> players = {
 	{ L"So, Wesley" },
 	{ L"Radjabov, Teimour" },
 };
+
+
+void fillScores() {
+	for (Player& p : players) {
+		while (p.results.size() < players.size()) {
+			p.results.push_back(Result::NONE);
+		}
+	}
+}
+
+void createOrRecenterTableWindow() {
+	int width, height;
+	getmaxyx(stdscr, height, width);
+
+	int x = (width - table->charWidth()) / 2;
+	int y = (height- table->charHeight()) / 2;
+
+	if (tableWindow == nullptr) {
+		tableWindow = newwin(table->charHeight(), table->charWidth(), y, x);
+	} else {
+		wresize(tableWindow, table->charHeight(), table->charWidth());
+		mvwin(tableWindow, y, x);
+	}
+}
 
 void recreateTable() {
 	if (table != nullptr) {
@@ -49,29 +66,6 @@ void recreateTable() {
 
 	table->widths[players.size()+3] = 7;
 	table->getCell(players.size()+3, 0).content = L"Place";
-}
-
-void createOrRecenterTableWindow() {
-	int width, height;
-	getmaxyx(stdscr, height, width);
-
-	int x = (width - table->charWidth()) / 2;
-	int y = (height- table->charHeight()) / 2;
-
-	if (tableWindow == nullptr) {
-		tableWindow = newwin(table->charHeight(), table->charWidth(), y, x);
-	} else {
-		wresize(tableWindow, table->charHeight(), table->charWidth());
-		mvwin(tableWindow, y, x);
-	}
-}
-
-void fillScores() {
-	for (Player& p : players) {
-		while (p.results.size() < players.size()) {
-			p.results.push_back(Result::NONE);
-		}
-	}
 }
 
 void writeToTable() {
@@ -132,75 +126,61 @@ void setResultAtCursor(Result r) {
 	players[cursor.x].results[cursor.y] = oppositeResult(r);
 }
 
-int main(int argc, char **argv) {
-	setlocale(LC_ALL, "");
-	initscr();
-	noecho();
-	keypad(stdscr, true);
- 	raw();
-	cbreak();
-	curs_set(0);
+void MainState::onKeyPressed(int key) {
+	switch (key) {
+		case KEY_RESIZE:
+			createOrRecenterTableWindow();
+			break;
+		case KEY_UP:
+			moveCursor(0, -1);
+			break;
+		case KEY_DOWN:
+			moveCursor(0, 1);
+			break;
+		case KEY_LEFT:
+			moveCursor(-1, 0);
+			break;
+		case KEY_RIGHT:
+			moveCursor(1, 0);
+			break;
+		case '1':
+		case 'w':
+			setResultAtCursor(Result::WIN);
+			break;
+		case '0':
+		case 'l':
+			setResultAtCursor(Result::LOSS);
+			break;
+		case '2':
+		case '5':
+		case ',':
+		case '.':
+		case 'r':
+		case 'd':
+			setResultAtCursor(Result::REMIS);
+			break;
+		case KEY_BACKSPACE:
+		case KEY_DC:
+			setResultAtCursor(Result::NONE);
+			break;
+		default:
+			break;
+	}
+}
 
+void MainState::onBegin() {
 	recreateTable();
 	createOrRecenterTableWindow();
 	fillScores();
+}
 
-	bool running = true;
-	int ch = 0;
-	while (running) {
+void MainState::draw() {
+	clear();
+	wclear(tableWindow);
 
-		switch (ch) {
-			case KEY_RESIZE:
-				createOrRecenterTableWindow();
-				break;
-			case KEY_UP:
-				moveCursor(0, -1);
-				break;
-			case KEY_DOWN:
-				moveCursor(0, 1);
-				break;
-			case KEY_LEFT:
-				moveCursor(-1, 0);
-				break;
-			case KEY_RIGHT:
-				moveCursor(1, 0);
-				break;
-			case '1':
-			case 'w':
-				setResultAtCursor(Result::WIN);
-				break;
-			case '0':
-			case 'l':
-				setResultAtCursor(Result::LOSS);
-				break;
-			case '2':
-			case '5':
-			case ',':
-			case '.':
-			case 'r':
-			case 'd':
-				setResultAtCursor(Result::REMIS);
-				break;
-			case KEY_BACKSPACE:
-			case KEY_DC:
-				setResultAtCursor(Result::NONE);
-				break;
-			default:
-				break;
-		}
+	writeToTable();
+	table->draw(tableWindow);
 
-		clear();
-		wclear(tableWindow);
-
-		writeToTable();
-		table->draw(tableWindow);
-
-		refresh();
-		wrefresh(tableWindow);
-
-		ch = getch();
-	}
-
-	endwin();
-	return 0;
+	refresh();
+	wrefresh(tableWindow);
 }
