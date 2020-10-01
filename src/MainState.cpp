@@ -2,6 +2,7 @@
 
 Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
+std::wstring nameInput = L"";
 
 struct {
 	int x = 1;
@@ -30,18 +31,9 @@ void fillScores() {
 }
 
 void createOrRecenterTableWindow() {
-	int width, height;
-	getmaxyx(stdscr, height, width);
-
-	int x = (width - table->getCharWidth()) / 2;
-	int y = (height- table->getCharHeight()) / 2;
-
-	if (tableWindow == nullptr) {
-		tableWindow = newwin(table->getCharHeight(), table->getCharWidth(), y, x);
-	} else {
-		wresize(tableWindow, table->getCharHeight(), table->getCharWidth());
-		mvwin(tableWindow, y, x);
-	}
+	int x = (getWidth() - table->getCharWidth()) / 2;
+	int y = (getHeight() - table->getCharHeight()) / 2;
+	tableWindow = createOrMoveAndResizeWindow(tableWindow, y, x, table->getCharHeight(), table->getCharWidth());
 }
 
 void recreateTable() {
@@ -163,20 +155,28 @@ void MainState::onKeyPressed(int key) {
 		case KEY_DC:
 			setResultAtCursor(Result::NONE);
 			break;
+		case 'e':
+			beginState(new PromtState(L"Enter Name: ", nameInput));
+			break;
 		default:
 			break;
 	}
 }
 
 void MainState::onBegin() {
+	fillScores();
 	recreateTable();
 	createOrRecenterTableWindow();
-	fillScores();
 }
 
 void MainState::draw() {
 	clear();
 	wclear(tableWindow);
+
+	if (!nameInput.empty()) {
+		players[cursor.y].name = nameInput;
+		nameInput.erase();
+	}
 
 	writeToTable();
 	table->draw(tableWindow);

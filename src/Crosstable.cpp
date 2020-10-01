@@ -2,6 +2,10 @@
 
 std::stack<State*> states;
 
+struct {
+	int width, height;
+} screenSize;
+
 void beginState(State* state) {
 	states.push(state);
 	state->onBegin();
@@ -13,6 +17,28 @@ void endState() {
 	states.pop();
 }
 
+void readScreenSize() {
+	getmaxyx(stdscr, screenSize.height, screenSize.width);
+}
+
+int getWidth() {
+	return screenSize.width;
+}
+
+int getHeight() {
+	return screenSize.height;
+}
+
+WINDOW* createOrMoveAndResizeWindow(WINDOW* win, int y, int x, int h, int w) {
+	if (win == nullptr) {
+		win = newwin(h, w, y, x);
+	} else {
+		wresize(win, h, w);
+		mvwin(win, y, x);
+	}
+	return win;
+}
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 	initscr();
@@ -22,11 +48,20 @@ int main(int argc, char **argv) {
 	cbreak();
 	curs_set(0);
 
+	readScreenSize();
 	beginState(new MainState());
 
+	int key = 0;
 	while (!states.empty()) {
+		if (key == KEY_RESIZE) {
+			readScreenSize();
+		}
+
+		states.top()->onKeyPressed(key);
+
 		states.top()->draw();
-		states.top()->onKeyPressed(getch());
+
+		key	= getch();
 	}
 
 	endwin();

@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <vector>
 #include <stack>
+#include <string>
 #include "Table.hpp"
 #include "Player.hpp"
 
@@ -26,6 +27,23 @@ public:
 	void onBegin();
 	virtual ~MainState() {}
 };
+
+class PromtState : public State {
+public:
+	std::wstring promt;
+	std::wstring& input;
+	PromtState(std::wstring promt, std::wstring& input);
+	void onKeyPressed(int key);
+	void draw();
+	void onBegin();
+	void onEnd();
+	virtual ~PromtState() {}
+};
+
+WINDOW* createOrMoveAndResizeWindow(WINDOW* win, int y, int x, int h, int w);
+
+int getWidth();
+int getHeight();
 
 void beginState(State* state);
 void endState();
