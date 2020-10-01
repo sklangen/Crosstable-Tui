@@ -8,6 +8,8 @@
 #include "Table.hpp"
 #include "Player.hpp"
 
+#define ERROR_PAIR 1
+
 #define MAX_PLAYERS 30
 #define INDEX_ALPHABET L"ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß"
 

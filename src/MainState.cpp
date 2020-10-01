@@ -3,6 +3,7 @@
 Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
 std::wstring nameInput = L"";
+std::wstring lastError = L"";
 
 struct {
 	int x = 1;
@@ -20,7 +21,6 @@ std::vector<Player> players = {
 	{ L"So, Wesley" },
 	{ L"Radjabov, Teimour" },
 };
-
 
 void fillScores() {
 	for (Player& p : players) {
@@ -41,7 +41,7 @@ void recreateTable() {
 		delete table;
 	}
 
-	table = new Table (players.size()+4, players.size()+1);
+	table = new Table(players.size()+4, players.size()+1);
 	table->columnWidths[0] = 3;
 	table->getCell(0, 0).content = L"#";
 
@@ -58,6 +58,12 @@ void recreateTable() {
 
 	table->columnWidths[players.size()+3] = 7;
 	table->getCell(players.size()+3, 0).content = L"Place";
+}
+
+void initTable() {
+	fillScores();
+	recreateTable();
+	createOrRecenterTableWindow();
 }
 
 void writeToTable() {
@@ -118,6 +124,22 @@ void setResultAtCursor(Result r) {
 	players[cursor.x].results[cursor.y] = oppositeResult(r);
 }
 
+void changeName() {
+	beginState(new PromtState(L"Enter Name: ", nameInput));
+}
+
+void addPlayer() {
+	if (players.size() >= MAX_PLAYERS) {
+		lastError = L"Max player limit reached";
+		return;
+	}
+
+	players.push_back({ L"" });
+	initTable();
+	cursor = { 0, (int)players.size()-1 };
+	changeName();
+}
+
 void MainState::onKeyPressed(int key) {
 	switch (key) {
 		case KEY_RESIZE:
@@ -155,28 +177,48 @@ void MainState::onKeyPressed(int key) {
 		case KEY_DC:
 			setResultAtCursor(Result::NONE);
 			break;
+		case 'a':
+			addPlayer();
+			break;
 		case 'e':
-			beginState(new PromtState(L"Enter Name: ", nameInput));
+			changeName();
 			break;
 		default:
 			break;
 	}
 }
 
+void changeNameIfSet() {
+	if (!lastError.empty()) {
+		move(getHeight()-1, 0);
+
+		int a = COLOR_PAIR(ERROR_PAIR) | A_BOLD;
+		attron(a);
+		addstr("Error: ");
+		addwstr(lastError.c_str());
+		attroff(a);
+
+		lastError.erase();
+	}
+}
+
+void showLastErrorIfSet() {
+	if (!nameInput.empty()) {
+		players[cursor.y].name = nameInput;
+		nameInput.erase();
+	}
+}
+
 void MainState::onBegin() {
-	fillScores();
-	recreateTable();
-	createOrRecenterTableWindow();
+	initTable();
 }
 
 void MainState::draw() {
 	clear();
 	wclear(tableWindow);
 
-	if (!nameInput.empty()) {
-		players[cursor.y].name = nameInput;
-		nameInput.erase();
-	}
+	changeNameIfSet();
+	showLastErrorIfSet();
 
 	writeToTable();
 	table->draw(tableWindow);

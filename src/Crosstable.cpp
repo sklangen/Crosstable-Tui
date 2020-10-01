@@ -48,6 +48,9 @@ int main(int argc, char **argv) {
 	cbreak();
 	curs_set(0);
 
+	start_color();
+	init_pair(ERROR_PAIR, COLOR_WHITE, COLOR_RED);
+
 	readScreenSize();
 	beginState(new MainState());
 
