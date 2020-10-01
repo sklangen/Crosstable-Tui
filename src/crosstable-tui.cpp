@@ -1,32 +1,11 @@
 #include <ncurses.h>
 #include <vector>
-#include <string>
 #include "Table.hpp"
+#include "Player.hpp"
 
 #define MAX_PLAYERS 30
 #define INDEX_ALPHABET L"ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜß"
 
-#define RESULT_NONE 0
-#define RESULT_WIN 1
-#define RESULT_REMIS 2
-#define RESULT_LOSS 3
-
-const float resultAsFloat[] = { 0.0f, 1.0f, 0.5f, 0.0f };
-const int oppositeResult[] = { RESULT_NONE, RESULT_LOSS, RESULT_REMIS, RESULT_WIN };
-const wchar_t* resultAsWChar = L" 1½0";
-
-struct Player {
-	std::wstring name;
-	std::vector<int> results;
-
-	float score() {
-		float score = 0;
-		for (int& r : results) {
-			score += resultAsFloat[r];
-		}
-		return score;
-	}
-};
 
 Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
@@ -90,7 +69,7 @@ void createOrRecenterTableWindow() {
 void fillScores() {
 	for (Player& p : players) {
 		while (p.results.size() < players.size()) {
-			p.results.push_back(RESULT_NONE);
+			p.results.push_back(Result::NONE);
 		}
 	}
 }
@@ -116,7 +95,7 @@ void writeToTable() {
 			if(c == r) {
 				result.content = L"X";
 			} else {
-				result.content = resultAsWChar[player.results[r]];
+				result.content = resultAsWChar(player.results[r]);
 				result.attr = A_BOLD;
 
 				if (r == cursor.x && c == cursor.y) {
@@ -148,9 +127,9 @@ void moveCursor(int dx, int dy) {
 	} while (cursor.x == cursor.y);
 }
 
-void setResultAtCursor(int result) {
-	players[cursor.y].results[cursor.x] = result;
-	players[cursor.x].results[cursor.y] = oppositeResult[result];
+void setResultAtCursor(Result r) {
+	players[cursor.y].results[cursor.x] = r;
+	players[cursor.x].results[cursor.y] = oppositeResult(r);
 }
 
 int main(int argc, char **argv) {
@@ -188,11 +167,11 @@ int main(int argc, char **argv) {
 				break;
 			case '1':
 			case 'w':
-				setResultAtCursor(RESULT_WIN);
+				setResultAtCursor(Result::WIN);
 				break;
 			case '0':
 			case 'l':
-				setResultAtCursor(RESULT_LOSS);
+				setResultAtCursor(Result::LOSS);
 				break;
 			case '2':
 			case '5':
@@ -200,11 +179,11 @@ int main(int argc, char **argv) {
 			case '.':
 			case 'r':
 			case 'd':
-				setResultAtCursor(RESULT_REMIS);
+				setResultAtCursor(Result::REMIS);
 				break;
 			case KEY_BACKSPACE:
 			case KEY_DC:
-				setResultAtCursor(RESULT_NONE);
+				setResultAtCursor(Result::NONE);
 				break;
 			default:
 				break;
