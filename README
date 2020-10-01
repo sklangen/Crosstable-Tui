@@ -7,4 +7,5 @@ TODO
 ====
 
 - Find actual rank of players in table based on scores
+- Handle unicode characters properly whilst changing names 
 - Don't exit on ctrl+c with unsaved changes

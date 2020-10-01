@@ -4,23 +4,14 @@ Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
 std::wstring nameInput = L"";
 std::wstring lastError = L"";
+bool shallDelelePlayer = false;
 
 struct {
 	int x = 1;
 	int y = 0;
 } cursor;
 
-std::vector<Player> players = {
-	{ L"Carlsen, Magnus" },
-	{ L"Caruana, Fabiano" },
-	{ L"Ding, Liren" },
-	{ L"Nepomniachtchi, Ian" },
-	{ L"Vachier-Lagrave, Maxime" },
-	{ L"Grischuk, Alexander" },
-	{ L"Aronian, Levon" },
-	{ L"So, Wesley" },
-	{ L"Radjabov, Teimour" },
-};
+std::vector<Player> players;
 
 void fillScores() {
 	for (Player& p : players) {
@@ -140,6 +131,10 @@ void addPlayer() {
 	changeName();
 }
 
+void deletePlayer() {
+	beginState(new ConfirmState(L"Delete player?", shallDelelePlayer));
+}
+
 void MainState::onKeyPressed(int key) {
 	switch (key) {
 		case KEY_RESIZE:
@@ -170,7 +165,6 @@ void MainState::onKeyPressed(int key) {
 		case ',':
 		case '.':
 		case 'r':
-		case 'd':
 			setResultAtCursor(Result::REMIS);
 			break;
 		case KEY_BACKSPACE:
@@ -183,12 +177,47 @@ void MainState::onKeyPressed(int key) {
 		case 'e':
 			changeName();
 			break;
+		case 'd':
+			deletePlayer();
+			break;
 		default:
 			break;
 	}
 }
 
+void fixCursorPosition() {
+	if (cursor.x >= (signed) players.size()) {
+		cursor.x--;
+	}
+	if (cursor.y >= (signed) players.size()) {
+		cursor.y--;
+	}
+}
+
+void removeResults() {
+	for (int i = 0; i < (signed) players.size(); ++i) {
+		players[i].results.erase(players[i].results.begin() + cursor.y);
+	}
+}
+
+void deletePlayerIfSet() {
+	if (shallDelelePlayer) {
+		players.erase(players.begin() + cursor.y);
+		removeResults();
+		fixCursorPosition();
+		initTable();
+		shallDelelePlayer = false;
+	}
+}
+
 void changeNameIfSet() {
+	if (!nameInput.empty()) {
+		players[cursor.y].name = nameInput;
+		nameInput.erase();
+	}
+}
+
+void showLastErrorIfSet() {
 	if (!lastError.empty()) {
 		move(getHeight()-1, 0);
 
@@ -202,13 +231,6 @@ void changeNameIfSet() {
 	}
 }
 
-void showLastErrorIfSet() {
-	if (!nameInput.empty()) {
-		players[cursor.y].name = nameInput;
-		nameInput.erase();
-	}
-}
-
 void MainState::onBegin() {
 	initTable();
 }
@@ -218,6 +240,7 @@ void MainState::draw() {
 	wclear(tableWindow);
 
 	changeNameIfSet();
+	deletePlayerIfSet();
 	showLastErrorIfSet();
 
 	writeToTable();

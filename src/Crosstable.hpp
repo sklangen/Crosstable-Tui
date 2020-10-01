@@ -15,7 +15,7 @@
 
 class State {
 public:
-	virtual void onKeyPressed(int key) = 0;
+	virtual void onKeyPressed(int key) {}
 	virtual void draw() {}
 	virtual void onBegin() {}
 	virtual void onEnd() {}
@@ -41,6 +41,20 @@ public:
 	void onEnd();
 	virtual ~PromtState() {}
 };
+
+class ConfirmState : public State {
+public:
+	std::wstring question;
+	std::wstring input = L"";
+	bool& answer;
+
+	ConfirmState(std::wstring question, bool& answer);
+	void draw();
+	void onBegin();
+	void onEnd();
+	virtual ~ConfirmState() {}
+};
+
 
 WINDOW* createOrMoveAndResizeWindow(WINDOW* win, int y, int x, int h, int w);
 
