@@ -16,13 +16,7 @@ struct Player {
 	std::wstring name;
 	std::vector<Result> results;
 
-	float score() {
-		float score = 0;
-		for (Result& r : results) {
-			score += resultAsFloat(r);
-		}
-		return score;
-	}
+	float score();
 };
 
 #endif /* PLAYER_HPP_ */

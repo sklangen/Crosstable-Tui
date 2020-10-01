@@ -13,3 +13,11 @@ wchar_t resultAsWChar(Result r){
 	wchar_t lookup[] = L" 1½0";
 	return lookup[(int)r];
 }
+
+float Player::score() {
+	float score = 0;
+	for (Result& r : results) {
+		score += resultAsFloat(r);
+	}
+	return score;
+}

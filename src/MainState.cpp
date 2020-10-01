@@ -33,13 +33,13 @@ void createOrRecenterTableWindow() {
 	int width, height;
 	getmaxyx(stdscr, height, width);
 
-	int x = (width - table->charWidth()) / 2;
-	int y = (height- table->charHeight()) / 2;
+	int x = (width - table->getCharWidth()) / 2;
+	int y = (height- table->getCharHeight()) / 2;
 
 	if (tableWindow == nullptr) {
-		tableWindow = newwin(table->charHeight(), table->charWidth(), y, x);
+		tableWindow = newwin(table->getCharHeight(), table->getCharWidth(), y, x);
 	} else {
-		wresize(tableWindow, table->charHeight(), table->charWidth());
+		wresize(tableWindow, table->getCharHeight(), table->getCharWidth());
 		mvwin(tableWindow, y, x);
 	}
 }
@@ -50,21 +50,21 @@ void recreateTable() {
 	}
 
 	table = new Table (players.size()+4, players.size()+1);
-	table->widths[0] = 3;
+	table->columnWidths[0] = 3;
 	table->getCell(0, 0).content = L"#";
 
-	table->widths[1] = 32;
+	table->columnWidths[1] = 32;
 	table->getCell(1, 0).content = L"Name";
 
 	for (int i = 0; i < (signed) players.size(); ++i) {
 		int col = i+2;
-		table->widths[col] = 3;
+		table->columnWidths[col] = 3;
 		table->getCell(col, 0).content = INDEX_ALPHABET[i];
 	}
-	table->widths[players.size()+2] = 7;
+	table->columnWidths[players.size()+2] = 7;
 	table->getCell(players.size()+2, 0).content = L"Score";
 
-	table->widths[players.size()+3] = 7;
+	table->columnWidths[players.size()+3] = 7;
 	table->getCell(players.size()+3, 0).content = L"Place";
 }
 
