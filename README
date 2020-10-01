@@ -7,3 +7,4 @@ TODO
 ====
 
 - Find actual rank of players in table based on scores
+- Don't exit on ctrl+c with unsaved changes

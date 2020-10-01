@@ -14,9 +14,9 @@ struct Cell {
 	int attr = 0;
 	std::wstring content = L"";
 
-	void draw(WINDOW* win, size_t width) {
+	void draw(WINDOW* win, int width) {
 		wattron(win, attr);
-		if (content.length() > width) {
+		if ((signed) content.length() > width) {
 			wprintw(win, "%*.*ls%lc", width-1, width-1, content.c_str(), L'…');
 		} else {
 			if (align == LEFT) {

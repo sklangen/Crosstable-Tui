@@ -12,6 +12,7 @@
 #define RESULT_LOSS 3
 
 const float resultAsFloat[] = { 0.0f, 1.0f, 0.5f, 0.0f };
+const int oppositeResult[] = { RESULT_NONE, RESULT_LOSS, RESULT_REMIS, RESULT_WIN };
 const wchar_t* resultAsWChar = L" 1½0";
 
 struct Player {
@@ -29,6 +30,11 @@ struct Player {
 
 Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
+
+struct {
+	int x = 1;
+	int y = 0;
+} cursor;
 
 std::vector<Player> players = {
 	{ L"Carlsen, Magnus" },
@@ -54,7 +60,7 @@ void recreateTable() {
 	table->widths[1] = 32;
 	table->getCell(1, 0).content = L"Name";
 
-	for (size_t i = 0; i < players.size(); ++i) {
+	for (int i = 0; i < (signed) players.size(); ++i) {
 		int col = i+2;
 		table->widths[col] = 3;
 		table->getCell(col, 0).content = INDEX_ALPHABET[i];
@@ -90,25 +96,32 @@ void fillScores() {
 }
 
 void writeToTable() {
-	for (size_t i = 0; i < players.size(); ++i) {
-		int row = i + 1;
-		Player& player = players[i];
+	for (int c = 0; c < (signed) players.size(); ++c) {
+		int row = c + 1;
+		Player& player = players[c];
 
-		table->getCell(0, row).content = INDEX_ALPHABET[i];
+		table->getCell(0, row).content = INDEX_ALPHABET[c];
 
 		Cell &name = table->getCell(1, row);
 		name.content = player.name;
 		name.align = Cell::LEFT;
 		name.attr = A_BOLD;
+		if (cursor.x == c) {
+			name.attr |= A_UNDERLINE;
+		}
 
-		for (size_t j = 0; j < players.size(); ++j) {
-			Cell& result = table->getCell(j+2 ,row);
+		for (int r = 0; r < (signed) players.size(); ++r) {
+			Cell& result = table->getCell(r+2 ,row);
 
-			if(i == j) {
+			if(c == r) {
 				result.content = L"X";
 			} else {
-				result.content = resultAsWChar[player.results[j]];
+				result.content = resultAsWChar[player.results[r]];
 				result.attr = A_BOLD;
+
+				if (r == cursor.x && c == cursor.y) {
+					result.attr |= A_STANDOUT;
+				}
 			}
 		}
 
@@ -117,18 +130,35 @@ void writeToTable() {
 		score.attr = A_BOLD;
 
 		Cell &place = table->getCell(players.size()+3, row);
-		place.content = std::to_wstring(i+1) + L" ";
+		place.content = std::to_wstring(c+1) + L" ";
 		place.align = Cell::RIGHT;
 		place.attr = A_BOLD;
 	}
 }
 
+inline int mod(int a, int b) {
+	int ret = a % b;
+	return ret >= 0 ? ret : ret + b;
+}
+
+void moveCursor(int dx, int dy) {
+	do {
+		cursor.x = mod(cursor.x + dx, players.size());
+		cursor.y = mod(cursor.y + dy, players.size());
+	} while (cursor.x == cursor.y);
+}
+
+void setResultAtCursor(int result) {
+	players[cursor.y].results[cursor.x] = result;
+	players[cursor.x].results[cursor.y] = oppositeResult[result];
+}
 
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "");
 	initscr();
 	noecho();
-	raw();
+	keypad(stdscr, true);
+ 	raw();
 	cbreak();
 	curs_set(0);
 
@@ -136,10 +166,48 @@ int main(int argc, char **argv) {
 	createOrRecenterTableWindow();
 	fillScores();
 
+	bool running = true;
 	int ch = 0;
-	do {
-		if (ch == KEY_RESIZE) {
-			createOrRecenterTableWindow();
+	while (running) {
+
+		switch (ch) {
+			case KEY_RESIZE:
+				createOrRecenterTableWindow();
+				break;
+			case KEY_UP:
+				moveCursor(0, -1);
+				break;
+			case KEY_DOWN:
+				moveCursor(0, 1);
+				break;
+			case KEY_LEFT:
+				moveCursor(-1, 0);
+				break;
+			case KEY_RIGHT:
+				moveCursor(1, 0);
+				break;
+			case '1':
+			case 'w':
+				setResultAtCursor(RESULT_WIN);
+				break;
+			case '0':
+			case 'l':
+				setResultAtCursor(RESULT_LOSS);
+				break;
+			case '2':
+			case '5':
+			case ',':
+			case '.':
+			case 'r':
+			case 'd':
+				setResultAtCursor(RESULT_REMIS);
+				break;
+			case KEY_BACKSPACE:
+			case KEY_DC:
+				setResultAtCursor(RESULT_NONE);
+				break;
+			default:
+				break;
 		}
 
 		clear();
@@ -150,7 +218,9 @@ int main(int argc, char **argv) {
 
 		refresh();
 		wrefresh(tableWindow);
-	} while ((ch = getch()) != 'q');
+
+		ch = getch();
+	}
 
 	endwin();
 	return 0;
