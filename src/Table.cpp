@@ -4,20 +4,24 @@
 #include <cassert>
 
 void Cell::draw(WINDOW* win, int width) {
-	wattron(win, attr);
+	wchar_t buffer[width+1];
+
 	if ((signed) content.length() > width) {
-		wprintw(win, "%*.*ls%lc", width-1, width-1, content.c_str(), L'…');
+		swprintf(buffer, width+1, L"%*.*ls%lc", width-1, width-1, content.c_str(), L'…');
 	} else {
 		if (align == LEFT) {
-			wprintw(win, "%-*.*ls", width, width, content.c_str());
+			swprintf(buffer, width+1, L"%-*.*ls", width, width, content.c_str());
 		} else if (align == RIGHT) {
-			wprintw(win, "%*.*ls", width, width, content.c_str());
+			swprintf(buffer, width+1, L"%*.*ls", width, width, content.c_str());
 		} else if (align == CENTER) {
 			int leftpad = (width - content.length()) / 2;
 			int rightpad = width - leftpad - content.length();
-			wprintw(win, "%*s%ls%*s", leftpad, "", content.c_str(), rightpad, "");
+			swprintf(buffer, width+1, L"%*s%ls%*s", leftpad, "", content.c_str(), rightpad, "");
 		}
 	}
+
+	wattron(win, attr);
+	waddwstr(win, buffer);
 	wattroff(win, attr);
 }
 
