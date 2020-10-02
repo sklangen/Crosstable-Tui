@@ -3,6 +3,15 @@ Crosstable TUI
 
 Simple ncurses program for managing round robin tournaments.
 
+Compile
+=======
+
+Install ncursesw via your package manager.
+
+$ cd src
+$ g++ -o crosstable-tui -I. -lncursesw *.cpp
+$ ./crosstable-tui
+
 TODO
 ====
 
