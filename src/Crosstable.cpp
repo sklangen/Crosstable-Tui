@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 	readScreenSize();
 	beginState(new MainState());
 
-	int key = 0;
+	wint_t key = 0;
 	while (!states.empty()) {
 		if (key == KEY_RESIZE) {
 			readScreenSize();
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
 		states.top()->draw();
 
-		key	= getch();
+		get_wch(&key);
 	}
 
 	endwin();

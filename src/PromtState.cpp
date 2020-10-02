@@ -13,7 +13,8 @@ void PromtState::onKeyPressed(int key) {
 			}
 			break;
 		default:
-			input += key;
+			input.append(1, key);
+			break;
 	}
 }
 
