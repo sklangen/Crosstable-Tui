@@ -136,6 +136,11 @@ void deletePlayer() {
 }
 
 void MainState::onKeyPressed(int key) {
+	if(players.empty()) {
+		addPlayer();
+		return;
+	}
+
 	switch (key) {
 		case KEY_RESIZE:
 			createOrRecenterTableWindow();
@@ -165,19 +170,20 @@ void MainState::onKeyPressed(int key) {
 		case ',':
 		case '.':
 		case 'r':
+		case 'd':
 			setResultAtCursor(Result::REMIS);
 			break;
 		case KEY_BACKSPACE:
 		case KEY_DC:
 			setResultAtCursor(Result::NONE);
 			break;
-		case 'a':
+		case 'A':
 			addPlayer();
 			break;
-		case 'e':
+		case 'E':
 			changeName();
 			break;
-		case 'd':
+		case 'D':
 			deletePlayer();
 			break;
 		default:
@@ -236,6 +242,7 @@ void MainState::onBegin() {
 }
 
 void MainState::draw() {
+
 	clear();
 	wclear(tableWindow);
 
