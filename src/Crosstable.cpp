@@ -9,6 +9,7 @@ struct {
 void beginState(State* state) {
 	states.push(state);
 	state->onBegin();
+	ungetch(0);
 }
 
 void endState() {

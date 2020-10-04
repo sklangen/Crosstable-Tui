@@ -7,7 +7,6 @@ void ConfirmState::onBegin() {
 }
 
 void ConfirmState::draw() {
-	ungetch(0);
 	endState();
 }
 
