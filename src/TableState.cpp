@@ -12,6 +12,7 @@ std::wstring loadPlayersFrom = L"";
 std::wstring savePlayersTo = L"";
 std::wstring lastPlayersFile = L"";
 bool shallDelelePlayer = false;
+bool shallEndTable = false;
 
 using convert_type = std::codecvt_utf8<wchar_t>;
 std::wstring_convert<convert_type, wchar_t> converter;
@@ -168,6 +169,10 @@ void savePlayers() {
 	beginState(new PromtState(L"Enter filename to save to: ", savePlayersTo));
 }
 
+void endTable() {
+	beginState(new ConfirmState(L"Quit? Have you saved?", shallEndTable));
+}
+
 void TableState::onKeyPressed(int key) {
 	if (key == 0) return;
 
@@ -230,6 +235,9 @@ void TableState::onKeyPressed(int key) {
 			break;
 		case 'S':
 			savePlayers();
+			break;
+		case 'Q':
+			endTable();
 			break;
 		default:
 			break;
@@ -308,6 +316,12 @@ void showLastErrorIfSet() {
 	}
 }
 
+void endTableIfSet() {
+	if (shallEndTable) {
+		endState();
+	}
+}
+
 TableState::TableState(const char*_loadPlayersFrom) {
 	loadPlayersFrom = converter.from_bytes(_loadPlayersFrom);
 	loadPlayersIfSet();
@@ -326,6 +340,7 @@ void TableState::draw() {
 	showLastErrorIfSet();
 	savePlayersIfSet();
 	loadPlayersIfSet();
+	endTableIfSet();
 
 	writeToTable();
 	table->draw(tableWindow);

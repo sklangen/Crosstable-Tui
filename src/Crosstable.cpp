@@ -48,7 +48,6 @@ int main(int argc, char **argv) {
 	noecho();
 	keypad(stdscr, true);
  	raw();
-	cbreak();
 	curs_set(0);
 
 	start_color();
