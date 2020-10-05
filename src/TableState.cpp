@@ -283,13 +283,13 @@ void savePlayersIfSet() {
 
 void showLastErrorIfSet() {
 	if (!lastError.empty()) {
-		move(getHeight()-1, 0);
+		move(getHeight()-2, 0);
 
 		int a = COLOR_PAIR(ERROR_PAIR) | A_BOLD;
 		attron(a);
 		addstr("Error: ");
 		addstr(lastError.c_str());
-		addstr(" Press any key to continue.");
+		addstr("\nPress any key to continue.");
 		attroff(a);
 	}
 }
