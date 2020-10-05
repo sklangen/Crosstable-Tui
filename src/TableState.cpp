@@ -8,6 +8,8 @@ WINDOW* tableWindow = nullptr;
 std::wstring nameInput = L"";
 std::string lastError = "";
 std::wstring loadPlayersFrom = L"";
+std::wstring savePlayersTo = L"";
+std::wstring lastPlayersFile = L"";
 bool shallDelelePlayer = false;
 
 using convert_type = std::codecvt_utf8<wchar_t>;
@@ -142,8 +144,14 @@ void deletePlayer() {
 	beginState(new ConfirmState(L"Delete player?", shallDelelePlayer));
 }
 
-void loadPlayer() {
+void loadPlayers() {
+	loadPlayersFrom = lastPlayersFile;
 	beginState(new PromtState(L"Enter filename to load from: ", loadPlayersFrom));
+}
+
+void savePlayers() {
+	savePlayersTo = lastPlayersFile;
+	beginState(new PromtState(L"Enter filename to save to: ", savePlayersTo));
 }
 
 void TableState::onKeyPressed(int key) {
@@ -204,7 +212,10 @@ void TableState::onKeyPressed(int key) {
 			deletePlayer();
 			break;
 		case 'L':
-			loadPlayer();
+			loadPlayers();
+			break;
+		case 'S':
+			savePlayers();
 			break;
 		default:
 			break;
@@ -252,7 +263,21 @@ void loadPlayersIfSet() {
 		} catch (std::exception& e) {
 			lastError = e.what();
 		}
+		lastPlayersFile = loadPlayersFrom;
 		loadPlayersFrom.erase();
+	}
+}
+
+void savePlayersIfSet() {
+	if (!savePlayersTo.empty()) {
+		try {
+			std::string filename = converter.to_bytes(savePlayersTo);
+			writePlayers(players, filename);
+		} catch (std::exception& e) {
+			lastError = e.what();
+		}
+		lastPlayersFile = savePlayersTo;
+		savePlayersTo.erase();
 	}
 }
 
@@ -285,6 +310,7 @@ void TableState::draw() {
 	changeNameIfSet();
 	deletePlayerIfSet();
 	showLastErrorIfSet();
+	savePlayersIfSet();
 	loadPlayersIfSet();
 
 	writeToTable();

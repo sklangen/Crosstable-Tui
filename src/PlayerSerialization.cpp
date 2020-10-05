@@ -4,7 +4,19 @@
 #include <string.h>
 
 void writePlayers(std::vector<Player> players, std::string& filename) {
+	std::wofstream out(filename);
+	if (out.fail()) {
+		throw std::ios_base::failure(strerror(errno));
+	}
 
+	for (int i = 0; i < (signed) players.size(); ++i) {
+		out << players[i].name;
+		for (int j = 0; j < (signed) players[i].results.size(); ++j) {
+			wchar_t r = i == j ? L'X' : resultAsWChar(players[i].results[j]);
+			out << '|' << r;
+		}
+		out << '\n';
+	}
 }
 
 std::vector<std::wstring> stringSplit(std::wstring s, std::wstring delim) {
