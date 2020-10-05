@@ -9,13 +9,13 @@ Key bindings
 - [UP], [DOWN], [LEFT], [RIGHT]
 => Move cursor
 
-- [1], [w]
+- [1], [W]
 => Insert win at the cursor position
 
-- [0], [l]
+- [0], [L]
 => Insert loss at the cursor position
 
-- [2], [5], [,], [.], [r], [d]
+- [2], [5], [,], [.], [R], [D]
 => Insert remis at the cursor position
 
 - [BACKSPACE], [DELETE]
@@ -51,3 +51,4 @@ TODO
 
 - Handle mouse events to navigate
 - Write possible shortcuts at the top of the screen
+- Calculate Tie Break scores
