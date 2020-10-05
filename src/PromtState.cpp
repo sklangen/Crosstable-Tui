@@ -4,6 +4,8 @@ PromtState::PromtState(std::wstring promt, std::wstring& input) : promt(promt), 
 
 void PromtState::onKeyPressed(int key) {
 	switch (key) {
+		case 0:
+			break;
 		case '\n':
 			endState();
 			break;

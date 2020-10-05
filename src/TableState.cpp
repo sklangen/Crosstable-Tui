@@ -1,10 +1,17 @@
+#include <locale>
+#include <codecvt>
 #include "Crosstable.hpp"
+#include "PlayerSerialization.hpp"
 
 Table* table = nullptr;
 WINDOW* tableWindow = nullptr;
 std::wstring nameInput = L"";
-std::wstring lastError = L"";
+std::string lastError = "";
+std::wstring loadPlayersFrom = L"";
 bool shallDelelePlayer = false;
+
+using convert_type = std::codecvt_utf8<wchar_t>;
+std::wstring_convert<convert_type, wchar_t> converter;
 
 struct {
 	int x = 1;
@@ -121,7 +128,7 @@ void changeName() {
 
 void addPlayer() {
 	if (players.size() >= MAX_PLAYERS) {
-		lastError = L"Max player limit reached";
+		lastError = "Max player limit reached.";
 		return;
 	}
 
@@ -135,8 +142,18 @@ void deletePlayer() {
 	beginState(new ConfirmState(L"Delete player?", shallDelelePlayer));
 }
 
-void MainState::onKeyPressed(int key) {
-	if(players.empty()) {
+void loadPlayer() {
+	beginState(new PromtState(L"Enter filename to load from: ", loadPlayersFrom));
+}
+
+void TableState::onKeyPressed(int key) {
+	if (key == 0) return;
+
+	if(!lastError.empty()) {
+		lastError.erase();
+	}
+
+	if (players.empty()) {
 		addPlayer();
 		return;
 	}
@@ -186,6 +203,9 @@ void MainState::onKeyPressed(int key) {
 		case 'D':
 			deletePlayer();
 			break;
+		case 'L':
+			loadPlayer();
+			break;
 		default:
 			break;
 	}
@@ -223,6 +243,19 @@ void changeNameIfSet() {
 	}
 }
 
+void loadPlayersIfSet() {
+	if (!loadPlayersFrom.empty()) {
+		try {
+			std::string filename = converter.to_bytes(loadPlayersFrom);
+			players = readPlayers(filename);
+			initTable();
+		} catch (std::exception& e) {
+			lastError = e.what();
+		}
+		loadPlayersFrom.erase();
+	}
+}
+
 void showLastErrorIfSet() {
 	if (!lastError.empty()) {
 		move(getHeight()-1, 0);
@@ -230,25 +263,29 @@ void showLastErrorIfSet() {
 		int a = COLOR_PAIR(ERROR_PAIR) | A_BOLD;
 		attron(a);
 		addstr("Error: ");
-		addwstr(lastError.c_str());
+		addstr(lastError.c_str());
+		addstr(" Press any key to continue.");
 		attroff(a);
-
-		lastError.erase();
 	}
 }
 
-void MainState::onBegin() {
+TableState::TableState(const char*_loadPlayersFrom) {
+	loadPlayersFrom = converter.from_bytes(_loadPlayersFrom);
+	loadPlayersIfSet();
+}
+
+void TableState::onBegin() {
 	initTable();
 }
 
-void MainState::draw() {
-
+void TableState::draw() {
 	clear();
 	wclear(tableWindow);
 
 	changeNameIfSet();
 	deletePlayerIfSet();
 	showLastErrorIfSet();
+	loadPlayersIfSet();
 
 	writeToTable();
 	table->draw(tableWindow);

@@ -1,4 +1,5 @@
 #include "Crosstable.hpp"
+#include <string>
 
 std::stack<State*> states;
 
@@ -16,6 +17,7 @@ void endState() {
 	states.top()->onEnd();
 	delete states.top();
 	states.pop();
+	ungetch(0);
 }
 
 void readScreenSize() {
@@ -53,7 +55,13 @@ int main(int argc, char **argv) {
 	init_pair(ERROR_PAIR, COLOR_WHITE, COLOR_RED);
 
 	readScreenSize();
-	beginState(new MainState());
+	TableState* ts;
+	if (argc >= 2) {
+		ts = new TableState(argv[1]);
+	} else {
+		ts = new TableState();
+	}
+	beginState(ts);
 
 	wint_t key = 0;
 	while (!states.empty()) {

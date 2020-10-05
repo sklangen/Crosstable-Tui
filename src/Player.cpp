@@ -14,6 +14,19 @@ wchar_t resultAsWChar(Result r){
 	return lookup[(int)r];
 }
 
+Result wcharAsResult(wchar_t wch) {
+	switch (wch) {
+		case '1':
+			return Result::WIN;
+		case '0':
+			return Result::LOSS;
+		case '½':
+			return Result::REMIS;
+		default:
+			return Result::NONE;
+	}
+}
+
 float Player::score() {
 	float score = 0;
 	for (Result& r : results) {

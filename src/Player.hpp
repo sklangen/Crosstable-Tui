@@ -11,6 +11,7 @@ enum class Result : int {
 float resultAsFloat(Result r);
 Result oppositeResult(Result r);
 wchar_t resultAsWChar(Result r);
+Result wcharAsResult(wchar_t wch);
 
 struct Player {
 	std::wstring name;

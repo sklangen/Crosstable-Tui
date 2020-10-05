@@ -1,0 +1,4 @@
+Emanuel Lasker|x|1|1|1
+Tigran Petrosian|0|x|1|1
+Magnus Carlsen|0|0|x|1
+Bobby Fischer|0|0|0|x

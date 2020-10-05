@@ -22,12 +22,14 @@ public:
 	virtual ~State() {}
 };
 
-class MainState : public State {
+class TableState : public State {
 public:
+	TableState() {}
+	TableState(const char* loadPlayersFrom);
 	void onKeyPressed(int key);
 	void draw();
 	void onBegin();
-	virtual ~MainState() {}
+	virtual ~TableState() {}
 };
 
 class PromtState : public State {
