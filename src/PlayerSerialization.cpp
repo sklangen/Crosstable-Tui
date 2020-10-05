@@ -1,29 +1,31 @@
 #include "PlayerSerialization.hpp"
+#include "Convert.hpp"
 
 #include <fstream>
 #include <string.h>
 
 void writePlayers(std::vector<Player> players, std::string& filename) {
-	std::wofstream out(filename);
+	std::ofstream out(filename);
 	if (out.fail()) {
 		throw std::ios_base::failure(strerror(errno));
 	}
 
 	for (int i = 0; i < (signed) players.size(); ++i) {
-		out << players[i].name;
-		for (int j = 0; j < (signed) players[i].results.size(); ++j) {
-			wchar_t r = i == j ? L'X' : resultAsWChar(players[i].results[j]);
-			out << '|' << r;
+		Player& p = players[i];
+		out << getWcharConverter().to_bytes(p.name);
+		for (int j = 0; j < (signed) p.results.size(); ++j) {
+			wchar_t r[] = { i == j ? L'X' : resultAsWChar(p.results[j]), L'\0' };
+			out << '|' << getWcharConverter().to_bytes(r);
 		}
 		out << '\n';
 	}
 }
 
-std::vector<std::wstring> stringSplit(std::wstring s, std::wstring delim) {
-	std::vector<std::wstring> v;
+std::vector<std::string> stringSplit(std::string s, std::string delim) {
+	std::vector<std::string> v;
 
 	size_t pos = 0;
-	std::wstring token;
+	std::string token;
 
 	while ((pos = s.find(delim)) != std::string::npos) {
 	    token = s.substr(0, pos);
@@ -35,12 +37,13 @@ std::vector<std::wstring> stringSplit(std::wstring s, std::wstring delim) {
 	return v;
 }
 
-Player readPlayer(std::wstring& line) {
-	std::vector<std::wstring> parts = stringSplit(line, L"|");
-	Player p = { parts[0] };
+Player readPlayer(std::string& line) {
+	std::vector<std::string> parts = stringSplit(line, "|");
+	Player p = { getWcharConverter().from_bytes(parts[0]) };
 
 	for (int i = 1; i < (signed) parts.size(); ++i) {
-		p.results.push_back(wcharAsResult(parts[i][0]));
+		Result r = wcharAsResult(getWcharConverter().from_bytes(parts[i])[0]);
+		p.results.push_back(r);
 	}
 
 	return p;
@@ -49,12 +52,12 @@ Player readPlayer(std::wstring& line) {
 std::vector<Player> readPlayers(std::string& filename) {
 	std::vector<Player> players;
 
-	std::wifstream in(filename);
+	std::ifstream in(filename);
 	if (in.fail()) {
 		throw std::ios_base::failure(strerror(errno));
 	}
 
-	std::wstring line;
+	std::string line;
 	while (std::getline(in, line)) {
 		players.push_back(readPlayer(line));
 	}

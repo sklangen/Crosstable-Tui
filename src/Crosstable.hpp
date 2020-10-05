@@ -57,7 +57,6 @@ public:
 	virtual ~ConfirmState() {}
 };
 
-
 WINDOW* createOrMoveAndResizeWindow(WINDOW* win, int y, int x, int h, int w);
 
 int getWidth();

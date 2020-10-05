@@ -1,4 +1,5 @@
 #include "Crosstable.hpp"
+
 #include <string>
 
 std::stack<State*> states;

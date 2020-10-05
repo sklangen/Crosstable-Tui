@@ -16,11 +16,11 @@ wchar_t resultAsWChar(Result r){
 
 Result wcharAsResult(wchar_t wch) {
 	switch (wch) {
-		case '1':
+		case L'1':
 			return Result::WIN;
-		case '0':
+		case L'0':
 			return Result::LOSS;
-		case '½':
+		case L'½':
 			return Result::REMIS;
 		default:
 			return Result::NONE;

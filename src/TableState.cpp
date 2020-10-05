@@ -1,7 +1,6 @@
-#include <locale>
-#include <codecvt>
 #include <algorithm>
 #include "Crosstable.hpp"
+#include "Convert.hpp"
 #include "PlayerSerialization.hpp"
 
 Table* table = nullptr;
@@ -13,9 +12,6 @@ std::wstring savePlayersTo = L"";
 std::wstring lastPlayersFile = L"";
 bool shallDelelePlayer = false;
 bool shallEndTable = false;
-
-using convert_type = std::codecvt_utf8<wchar_t>;
-std::wstring_convert<convert_type, wchar_t> converter;
 
 struct {
 	int x = 1;
@@ -279,13 +275,13 @@ void changeNameIfSet() {
 void loadPlayersIfSet() {
 	if (!loadPlayersFrom.empty()) {
 		try {
-			std::string filename = converter.to_bytes(loadPlayersFrom);
+			std::string filename = getWcharConverter().to_bytes(loadPlayersFrom);
 			players = readPlayers(filename);
 			initTable();
+			lastPlayersFile = loadPlayersFrom;
 		} catch (std::exception& e) {
 			lastError = e.what();
 		}
-		lastPlayersFile = loadPlayersFrom;
 		loadPlayersFrom.erase();
 	}
 }
@@ -293,12 +289,12 @@ void loadPlayersIfSet() {
 void savePlayersIfSet() {
 	if (!savePlayersTo.empty()) {
 		try {
-			std::string filename = converter.to_bytes(savePlayersTo);
+			std::string filename = getWcharConverter().to_bytes(savePlayersTo);
 			writePlayers(players, filename);
+			lastPlayersFile = savePlayersTo;
 		} catch (std::exception& e) {
 			lastError = e.what();
 		}
-		lastPlayersFile = savePlayersTo;
 		savePlayersTo.erase();
 	}
 }
@@ -323,7 +319,7 @@ void endTableIfSet() {
 }
 
 TableState::TableState(const char*_loadPlayersFrom) {
-	loadPlayersFrom = converter.from_bytes(_loadPlayersFrom);
+	loadPlayersFrom = getWcharConverter().from_bytes(_loadPlayersFrom);
 	loadPlayersIfSet();
 }
 
