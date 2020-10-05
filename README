@@ -3,17 +3,51 @@ Crosstable TUI
 
 Simple ncurses program for managing round robin tournaments.
 
-Compile
-=======
+Key bindings
+============
+
+- [UP], [DOWN], [LEFT], [RIGHT]
+=> Move cursor
+
+- [1], [w]
+=> Insert win at the cursor position
+
+- [0], [l]
+=> Insert loss at the cursor position
+
+- [2], [5], [,], [.], [r], [d]
+=> Insert remis at the cursor position
+
+- [BACKSPACE], [DELETE]
+=> Remove result at the cursor position
+
+- [SHIFT] + [A]
+=> Add player row
+
+- [SHIFT] + [D]
+=> Delete current row
+
+- [SHIFT] + [E]
+=> Edit name of current row
+
+- [SHIFT] + [L]
+=> Load players from file
+
+- [SHIFT] + [S]
+=> Save players to file
+
+- [SHIFT] + [Q]
+=> Quit application
+
+Build
+=====
 
 Install ncursesw via your package manager.
 
-$ cd src
-$ g++ -o crosstable-tui -I. -lncursesw *.cpp
-$ ./crosstable-tui
+g++ -o crosstable-tui -Isrc -lncursesw src/*.cpp
 
 TODO
 ====
 
-- Find actual rank of players in table based on scores
-- Don't exit on ctrl+c with unsaved changes
+- Handle mouse events to navigate
+- Write possible shortcuts at the top of the screen
