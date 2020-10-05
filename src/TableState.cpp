@@ -1,5 +1,6 @@
 #include <locale>
 #include <codecvt>
+#include <algorithm>
 #include "Crosstable.hpp"
 #include "PlayerSerialization.hpp"
 
@@ -40,7 +41,7 @@ void recreateTable() {
 	if (table != nullptr) {
 		delete table;
 	}
-
+	
 	table = new Table(players.size()+4, players.size()+1);
 	table->columnWidths[0] = 3;
 	table->getCell(0, 0).content = L"#";
@@ -66,7 +67,18 @@ void initTable() {
 	createOrRecenterTableWindow();
 }
 
+std::vector<float> getSortedScrores() {
+	std::vector<float> v(players.size());
+	for (int i = 0; i < (signed) players.size(); ++i) {
+		v[i] = players[i].score();
+	}
+	std::sort(v.begin(), v.end(), [](float& a, float& b){ return a > b; });
+	return v;
+}
+
 void writeToTable() {
+	std::vector<float> scores = getSortedScrores();
+
 	for (int c = 0; c < (signed) players.size(); ++c) {
 		int row = c + 1;
 		Player& player = players[c];
@@ -101,7 +113,9 @@ void writeToTable() {
 		score.attr = A_BOLD;
 
 		Cell &place = table->getCell(players.size()+3, row);
-		place.content = std::to_wstring(c+1) + L" ";
+		auto it = std::find(scores.begin(), scores.end(), player.score());
+		int index = std::distance(scores.begin(), it);
+		place.content = std::to_wstring(index+1) + L" ";
 		place.align = Cell::RIGHT;
 		place.attr = A_BOLD;
 	}

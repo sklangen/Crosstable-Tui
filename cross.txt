@@ -1,5 +1,5 @@
-Emanuel Lasker|X|1|1|1|1
-Tigran Petrosian|0|X|1|1|1
-Magnus Carlsen|0|0|X|1|1
-Bobby Fischer|0|0|0|X|1
-Vasily Smyslov|0|0|0|0|X
+Emanuel Lasker|X|1|0|0|1
+Tigran Petrosian|0|X|1|0|0
+Magnus Carlsen|1|0|X|0|0
+Bobby Fischer|1|1|1|X|1
+Vasily Smyslov|0|1|1|0|X
